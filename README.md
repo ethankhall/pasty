@@ -2,6 +2,12 @@
 A CLI client for hastebin.com written in Rust.
 Currently, it only supports uploading of files. You can optionally open newly opened files in a new browser window using `--open`.
 
+## Example Usage
+```Bash
+hastebin-client upload ./file.txt --open
+```
+The command above uploads ./file.txt to Hastebin and uploads the newly created haste in a new browser window.
+
 ## Installing
 
 If you don't want to build from source, head over to the [releases](https://github.com/joek13/hastebin-client/releases/latest) page and grab the latest binary build. If there isn't one available for your platform, you'll have to build from source - instructions for that are below.
