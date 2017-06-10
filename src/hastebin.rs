@@ -27,13 +27,18 @@ impl Error for UploadError {
         }
     }
 }
-
+/// Uploads something to Hastebin.
+/// # Errors
+/// Errors if reading fails, it contains invalid UTF-8, or anything
+/// else goes wrong during uploading (i.e. network issues, rate-limits, etc.)
 pub fn upload<T: Read>(source: &mut T) -> Result<String, UploadError> {
     let mut contents = String::new();
     source.read_to_string(&mut contents)
         .map_err(|e| UploadError::IOError(e))?;
     Ok("we good".to_owned())
 }
+///Uploads a file.
+///See hastebin::upload for errors and more.
 pub fn upload_file<P: AsRef<Path>> (path: P) -> Result<String, UploadError> {
     let mut f = File::open(path)
         .map_err(|e| UploadError::IOError(e))?;
