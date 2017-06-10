@@ -1,6 +1,10 @@
 extern crate hyper;
 extern crate hyper_native_tls;
 extern crate clap;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 mod hastebin;
 
@@ -28,13 +32,6 @@ fn main() {
                         .help("Opens the created paste after using xdg-open.")
                         .required(false)
                     )
-                    )
-        .subcommand(SubCommand::with_name("download")
-                    .about("downloads a file from hastebin.")
-                    .arg(Arg::with_name("URL")
-                         .required(true)
-                         .help("the URL or id of the haste to download.")
-                        )
                     )
         .get_matches();
     if let Err(e) = run(matches) {

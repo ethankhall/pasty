@@ -9,14 +9,19 @@ use hyper;
 use hyper::client::Client;
 use hyper::header;
 use hyper::net::HttpsConnector;
+use hyper::status::StatusCode;
 use hyper_native_tls::NativeTlsClient;
+
+use serde_json;
 
 #[derive(Debug)]
 pub enum UploadError
 {
    IOError(io::Error),
    TlsError(String),
-   HyperError(hyper::error::Error)
+   HyperError(hyper::error::Error),
+   ApiError(StatusCode),
+   ParseError(serde_json::error::Error)
 }
 
 impl fmt::Display for UploadError {
@@ -24,6 +29,8 @@ impl fmt::Display for UploadError {
         let message: String = match *self {
             UploadError::IOError(ref e) => e.to_string(),
             UploadError::HyperError(ref e) => e.to_string(),
+            UploadError::ParseError(ref e) => e.to_string(),
+            UploadError::ApiError(code) => format!("Server responded with status code {}", code),
             UploadError::TlsError(ref e) => e.clone()
         };
         write!(f, "{}", message)
@@ -35,10 +42,18 @@ impl Error for UploadError {
         match *self {
             UploadError::IOError(ref e) => e.description(),
             UploadError::HyperError(ref e) => e.description(),
-            UploadError::TlsError(ref e) => e.as_str()
+            UploadError::ParseError(ref e) => e.description(),
+            UploadError::TlsError(ref e) => e.as_str(),
+            UploadError::ApiError(_) => "The server responded with a status code that was not 200."
         }
     }
 }
+
+#[derive(Deserialize, Serialize)]
+struct Response {
+    key: String
+}
+
 /// Uploads something to Hastebin.
 /// # Errors
 /// Errors if reading fails, it contains invalid UTF-8, or anything
@@ -60,13 +75,16 @@ pub fn upload<T: Read>(source: &mut T) -> Result<String, UploadError> {
         .send()
         .map_err(|e| UploadError::HyperError(e))?;
 
-    let mut response_body = String::new();
-    res.read_to_string(&mut response_body)
-        .map_err(|e| UploadError::IOError(e))?;
-
-    println!("{}", response_body);
-
-    Ok("we good".to_owned())
+    if res.status == StatusCode::Ok {
+        let mut response_body = String::new();
+        res.read_to_string(&mut response_body)
+            .map_err(|e| UploadError::IOError(e))?;
+        let r: Response = serde_json::from_str(response_body.as_str())
+            .map_err(|e| UploadError::ParseError(e))?;
+        Ok(r.key)
+    } else {
+        return Err(UploadError::ApiError(res.status));
+    }
 }
 ///Uploads a file.
 ///See hastebin::upload for errors and more.
