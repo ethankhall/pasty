@@ -2,6 +2,8 @@ extern crate hyper;
 extern crate hyper_native_tls;
 extern crate clap;
 
+mod hastebin;
+
 use clap::{App, Arg, SubCommand, ArgMatches};
 use std::io::Write;
 use std::process::exit;
@@ -33,5 +35,8 @@ fn main() {
     exit(0);
 }
 fn run(matches: ArgMatches) -> Result<(), String> {
+    if let Some(matches) = matches.subcommand_matches("upload") {
+        //upload file
+    }
     Ok(())
 }
