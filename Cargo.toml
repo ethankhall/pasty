@@ -1,0 +1,6 @@
+[package]
+name = "hastebin-client"
+version = "0.1.0"
+authors = ["Joe K ***REMOVED***"]
+
+[dependencies]
