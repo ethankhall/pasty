@@ -15,13 +15,12 @@ use hyper_native_tls::NativeTlsClient;
 use serde_json;
 
 #[derive(Debug)]
-pub enum UploadError
-{
-   IOError(io::Error),
-   TlsError(String),
-   HyperError(hyper::error::Error),
-   ApiError(StatusCode),
-   ParseError(serde_json::error::Error)
+pub enum UploadError {
+    IOError(io::Error),
+    TlsError(String),
+    HyperError(hyper::error::Error),
+    ApiError(StatusCode),
+    ParseError(serde_json::error::Error),
 }
 
 impl From<io::Error> for UploadError {
@@ -49,7 +48,7 @@ impl fmt::Display for UploadError {
             UploadError::HyperError(ref e) => e.to_string(),
             UploadError::ParseError(ref e) => e.to_string(),
             UploadError::ApiError(code) => format!("Server responded with status code {}", code),
-            UploadError::TlsError(ref e) => e.clone()
+            UploadError::TlsError(ref e) => e.clone(),
         };
         write!(f, "{}", message)
     }
@@ -62,14 +61,14 @@ impl Error for UploadError {
             UploadError::HyperError(ref e) => e.description(),
             UploadError::ParseError(ref e) => e.description(),
             UploadError::TlsError(ref e) => e.as_str(),
-            UploadError::ApiError(_) => "The server responded with a status code that was not 200."
+            UploadError::ApiError(_) => "The server responded with a status code that was not 200.",
         }
     }
 }
 
 #[derive(Deserialize, Serialize)]
 struct Response {
-    key: String
+    key: String,
 }
 
 /// Uploads something to Hastebin.
@@ -86,9 +85,11 @@ pub fn upload<T: Read>(source: &mut T) -> Result<String, UploadError> {
     let connector = HttpsConnector::new(ssl);
     let client = Client::with_connector(connector);
 
-    let mut res = client.post("https://hastebin.com/documents")
+    let mut res = client
+        .post("https://hastebin.com/documents")
         .body(contents.as_str())
-        .header(header::UserAgent("Hastebin CLI (https://github.com/joek13/hastebin-client)".to_owned()))
+        .header(header::UserAgent("Hastebin CLI (https://github.com/joek13/hastebin-client)"
+                                      .to_owned()))
         .send()?;
 
     if res.status == StatusCode::Ok {
@@ -102,7 +103,7 @@ pub fn upload<T: Read>(source: &mut T) -> Result<String, UploadError> {
 }
 ///Uploads a file.
 ///See hastebin::upload for errors and more.
-pub fn upload_file<P: AsRef<Path>> (path: P) -> Result<String, UploadError> {
+pub fn upload_file<P: AsRef<Path>>(path: P) -> Result<String, UploadError> {
     let mut f = File::open(path)?;
     upload(&mut f)
 }
