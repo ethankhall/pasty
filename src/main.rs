@@ -50,10 +50,13 @@ fn run(matches: ArgMatches) -> Result<(), String> {
                 println!("{}", url);
                 if matches.is_present("open") {
                     //open with xdg-open
-                    Command::new("xdg-open")
+                    Command::new("xdg-open") //TODO: config file for other programs?
                         .arg(url)
                         .spawn()
-                        .expect("Failed to open");
+                        .map_err(|e| {
+                            format!("An error occured while attempting to open the new Haste: {}",
+                                    e.to_string())
+                        })?;
                 }
             }
         }
