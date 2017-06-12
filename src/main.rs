@@ -37,28 +37,34 @@ fn main() {
     exit(0);
 }
 fn run(matches: ArgMatches) -> Result<(), String> {
-    if let Some(matches) = matches.subcommand_matches("upload") {
-        //upload file
-        let file = matches.value_of("file").unwrap();
-        //should crash if file isn't present, as it's a required argument
-        match hastebin::upload_file(file) {
-            Err(e) => {
-                return Err(e.to_string());
+    match matches.subcommand_name() {
+        Some("upload") => {
+            let matches = matches.subcommand_matches("upload").unwrap(); //ok to unwrap here, guaranteed some matches
+
+            //upload file
+            let file = matches.value_of("file").unwrap();
+            //should crash if file isn't present, as it's a required argument
+            let id = hastebin::upload_file(file).map_err(|e| e.to_string())?;
+
+            let url = format!("https://hastebin.com/{}", id);
+            println!("{}", url);
+
+            if matches.is_present("open") {
+                //open with xdg-open
+                Command::new("xdg-open") //TODO: config file for other programs?
+                    .arg(url)
+                    .spawn()
+                    .map_err(|e| {
+                        format!("An error occured while attempting to open the new Haste: {}",
+                                e.to_string())
+                    })?;
             }
-            Ok(id) => {
-                let url = format!("https://hastebin.com/{}", id);
-                println!("{}", url);
-                if matches.is_present("open") {
-                    //open with xdg-open
-                    Command::new("xdg-open") //TODO: config file for other programs?
-                        .arg(url)
-                        .spawn()
-                        .map_err(|e| {
-                            format!("An error occured while attempting to open the new Haste: {}",
-                                    e.to_string())
-                        })?;
-                }
-            }
+        }
+        Some(_) => {
+            unreachable!(); //clap should prevent any incorrect subcommands from matching
+        }
+        None => {
+            return Err("A subcommand is required".to_owned());
         }
     }
     Ok(())
