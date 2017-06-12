@@ -16,9 +16,8 @@ If you don't want to build from source, head over to the [releases](https://gith
 
 1. Make sure you have [Rust](https://www.rust-lang.org/en-US/) installed.
 2. Clone the repo.
-3. Enter the directory and run `cargo build --release` (the `--release` flag enables compile-time optimizations)
-4. Enter the newly created `target/release` folder and copy the `hastebin-client` binary into `/usr/bin` or put it somewhere safe and add it to your PATH.
-5. You're done! Optionally, add the following to your `vim` config file to create a custom command to upload the currently open file.
+3. Enter the directory and run `cargo install`
+4. You're done! Optionally, add the following to your `vim` config file to create a custom command to upload the currently open file.
 ```
 :command Haste !hastebin-client upload --open "%"
 ```
