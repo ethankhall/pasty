@@ -46,13 +46,12 @@ fn run(matches: ArgMatches) -> Result<(), String> {
             let matches = matches.subcommand_matches("upload").unwrap(); //ok to unwrap here, guaranteed some matches
 
             //upload file
-            let id = match matches.value_of("file") {
-                    Some(file) => uploader::upload_file(file), //read from file
-                    None => uploader::upload(&mut io::stdin()), //read from stdin if no file provided
+            let url = match matches.value_of("file") {
+                    Some(file) => uploader::hastebin::upload_file(file), //read from file
+                    None => uploader::hastebin::upload(&mut io::stdin()), //read from stdin if no file provided
                 }
                 .map_err(|e| e.to_string())?;
 
-            let url = format!("https://hastebin.com/{}", id);
             println!("{}", url);
 
             if matches.is_present("open") {

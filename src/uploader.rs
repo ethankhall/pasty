@@ -66,44 +66,46 @@ impl Error for UploadError {
     }
 }
 
-#[derive(Deserialize, Serialize)]
-struct Response {
-    key: String,
-}
-
-/// Uploads something to Hastebin.
-/// # Errors
-/// Errors if reading fails, it contains invalid UTF-8, or anything
-/// else goes wrong during uploading (i.e. network issues, rate-limits, etc.)
-pub fn upload<T: Read>(source: &mut T) -> Result<String, UploadError> {
-    let mut contents = String::new();
-    source.read_to_string(&mut contents)?;
-
-    //actually upload the file
-    let ssl = NativeTlsClient::new()
-        .map_err(|e| UploadError::TlsError(e.to_string()))?;
-    let connector = HttpsConnector::new(ssl);
-    let client = Client::with_connector(connector);
-
-    let mut res = client
-        .post("https://hastebin.com/documents")
-        .body(contents.as_str())
-        .header(header::UserAgent("Hastebin CLI (https://github.com/joek13/hastebin-client)"
-                                      .to_owned()))
-        .send()?;
-
-    if res.status == StatusCode::Ok {
-        let mut response_body = String::new();
-        res.read_to_string(&mut response_body)?;
-        let r: Response = serde_json::from_str(response_body.as_str())?;
-        Ok(r.key)
-    } else {
-        return Err(UploadError::ApiError(res.status));
+pub mod hastebin {
+    use uploader::*;
+    #[derive(Deserialize, Serialize)]
+    struct Response {
+        key: String,
     }
-}
-///Uploads a file.
-///See hastebin::upload for errors and more.
-pub fn upload_file<P: AsRef<Path>>(path: P) -> Result<String, UploadError> {
-    let mut f = File::open(path)?;
-    upload(&mut f)
+    /// Uploads something to Hastebin.
+    /// # Errors
+    /// Errors if reading fails, it contains invalid UTF-8, or anything
+    /// else goes wrong during uploading (i.e. network issues, rate-limits, etc.)
+    pub fn upload<T: Read>(source: &mut T) -> Result<String, UploadError> {
+        let mut contents = String::new();
+        source.read_to_string(&mut contents)?;
+
+        //actually upload the file
+        let ssl = NativeTlsClient::new()
+            .map_err(|e| UploadError::TlsError(e.to_string()))?;
+        let connector = HttpsConnector::new(ssl);
+        let client = Client::with_connector(connector);
+
+        let mut res = client
+            .post("https://hastebin.com/documents")
+            .body(contents.as_str())
+            .header(header::UserAgent("Hastebin CLI (https://github.com/joek13/hastebin-client)"
+                                          .to_owned()))
+            .send()?;
+
+        if res.status == StatusCode::Ok {
+            let mut response_body = String::new();
+            res.read_to_string(&mut response_body)?;
+            let r: Response = serde_json::from_str(response_body.as_str())?;
+            Ok(format!("https://hastebin.com/{}", r.key))
+        } else {
+            return Err(UploadError::ApiError(res.status));
+        }
+    }
+    ///Uploads a file.
+    ///See hastebin::upload for errors and more.
+    pub fn upload_file<P: AsRef<Path>>(path: P) -> Result<String, UploadError> {
+        let mut f = File::open(path)?;
+        upload(&mut f)
+    }
 }
