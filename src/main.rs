@@ -17,7 +17,7 @@ use std::process::Command;
 
 fn main() {
     let matches = App::new("pasty")
-        .version("0.2")
+        .version(env!("CARGO_PKG_VERSION"))
         .author("Joe K.")
         .about("Uploads files to various paste sites")
         .subcommand(SubCommand::with_name("upload")
