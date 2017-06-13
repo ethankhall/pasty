@@ -4,6 +4,7 @@ extern crate clap;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
 extern crate serde_json;
 
 mod uploader;
@@ -27,6 +28,19 @@ fn main() {
                                  .takes_value(true)
                                  .required(false)
                                  .help("The file to be uploaded."))
+                        .arg(Arg::with_name("service")
+                                 .long("service")
+                                 .short("s")
+                                 .takes_value(true)
+                                 .required(false)
+                                 .possible_values(&["hastebin", "github"])
+                                 .help("Service to upload to."))
+                        .arg(Arg::with_name("filename")
+                                 .long("name")
+                                 .short("n")
+                                 .takes_value(true)
+                                 .required(false)
+                                 .help("Filename to use. Some services will display the filename with the pasted file"))
                         .arg(Arg::with_name("open")
                                  .short("o")
                                  .long("open")
@@ -43,15 +57,36 @@ fn main() {
 fn run(matches: ArgMatches) -> Result<(), String> {
     match matches.subcommand_name() {
         Some("upload") => {
-            let matches = matches.subcommand_matches("upload").unwrap(); //ok to unwrap here, guaranteed some matches
+            let matches = matches.subcommand_matches("upload").unwrap();
+            //ok to unwrap here, guaranteed some matches
 
             //upload file
-            let url = match matches.value_of("file") {
-                    Some(file) => uploader::hastebin::upload_file(file), //read from file
-                    None => uploader::hastebin::upload(&mut io::stdin()), //read from stdin if no file provided
+            let url: String = match matches.value_of("service") {
+                Some("github") => {
+                    let url = match matches.value_of("file") {
+                            Some(file) => {
+                                uploader::github::upload_file(file,
+                                                              matches
+                                                                  .value_of("filename")
+                                                                  .map(|s| s.to_owned()))
+                            }
+                            None => uploader::github::upload(&mut io::stdin(), "".to_owned()),
+                        }
+                        .map_err(|e| e.to_string())?;
+                    url
                 }
-                .map_err(|e| e.to_string())?;
-
+                Some("hastebin") | None => {
+                    let url = match matches.value_of("file") {
+                            Some(file) => uploader::hastebin::upload_file(file), //read from file
+                            None => uploader::hastebin::upload(&mut io::stdin()), //read from stdin if no file provided
+                        }
+                        .map_err(|e| e.to_string())?;
+                    url
+                }
+                Some(_) => {
+                    unreachable!(); //clap should prevent this from happening
+                }
+            };
             println!("{}", url);
 
             if matches.is_present("open") {
