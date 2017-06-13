@@ -12,14 +12,14 @@ The command above uploads ./file.txt to Hastebin and uploads the newly created h
 
 ## Installing
 
-If you don't want to build from source, head over to the [releases](https://github.com/joek13/pasty/releases/latest) page and grab the latest binary build. If there isn't one available for your platform, you'll have to build from source - instructions for that are below.
-
-## Building from source
-
-1. Make sure you have [Rust](https://www.rust-lang.org/en-US/) installed.
-2. Clone the repo.
-3. Enter the directory and run `cargo install`
-4. You're done! Optionally, add the following to your `vim` config file to create a custom command to upload the currently open file.
+Make sure you have [Rust](https://rust-lang.org) and its package manager Cargo installed, then run
+```Bash
+cargo install pasty
 ```
+## VIM Integration
+
+Add the following to your `.vimrc` file to add commands for uploading the current buffer:
+```VIMscript
 :command Haste :w !pasty upload --open 
+:command Gist :w !pasty upload --open --service github --name "%:t"
 ```
