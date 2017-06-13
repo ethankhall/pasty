@@ -16,7 +16,7 @@ use std::process::Command;
 
 fn main() {
     let matches = App::new("Hastebin Client")
-        .version("0.1")
+        .version("0.2")
         .author("Joe K.")
         .about("Uploads and downloads files from hastebin.com")
         .subcommand(SubCommand::with_name("upload")
