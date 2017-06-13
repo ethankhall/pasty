@@ -16,15 +16,13 @@ use std::process::exit;
 use std::process::Command;
 
 fn main() {
-    let matches = App::new("Hastebin Client")
+    let matches = App::new("pasty")
         .version("0.2")
         .author("Joe K.")
-        .about("Uploads and downloads files from hastebin.com")
+        .about("Uploads files to various paste sites")
         .subcommand(SubCommand::with_name("upload")
-                        .about("uploads a file to hastebin.")
+                        .about("uploads a file.")
                         .arg(Arg::with_name("file")
-                                 .long("file")
-                                 .short("f")
                                  .takes_value(true)
                                  .required(false)
                                  .help("The file to be uploaded."))
@@ -34,7 +32,7 @@ fn main() {
                                  .takes_value(true)
                                  .required(false)
                                  .possible_values(&["hastebin", "github"])
-                                 .help("Service to upload to."))
+                                 .help("Service to upload to. Defaults to hastebin."))
                         .arg(Arg::with_name("filename")
                                  .long("name")
                                  .short("n")

@@ -69,7 +69,7 @@ impl Error for UploadError {
     }
 }
 
-const USER_AGENT: &'static str = "Hastebin CLI (https://github.com/joek13/hastebin-client)";
+const USER_AGENT: &'static str = "pasty CLI (https://github.com/joek13/pasty)";
 
 pub mod hastebin {
     use uploader::*;
