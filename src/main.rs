@@ -10,6 +10,7 @@ mod hastebin;
 
 use clap::{App, Arg, SubCommand, ArgMatches};
 use std::io::Write;
+use std::io;
 use std::process::exit;
 use std::process::Command;
 
@@ -21,7 +22,10 @@ fn main() {
         .subcommand(SubCommand::with_name("upload")
                         .about("uploads a file to hastebin.")
                         .arg(Arg::with_name("file")
-                                 .required(true)
+                                 .long("file")
+                                 .short("f")
+                                 .takes_value(true)
+                                 .required(false)
                                  .help("The file to be uploaded."))
                         .arg(Arg::with_name("open")
                                  .short("o")
@@ -42,9 +46,11 @@ fn run(matches: ArgMatches) -> Result<(), String> {
             let matches = matches.subcommand_matches("upload").unwrap(); //ok to unwrap here, guaranteed some matches
 
             //upload file
-            let file = matches.value_of("file").unwrap();
-            //should crash if file isn't present, as it's a required argument
-            let id = hastebin::upload_file(file).map_err(|e| e.to_string())?;
+            let id = match matches.value_of("file") {
+                    Some(file) => hastebin::upload_file(file), //read from file
+                    None => hastebin::upload(&mut io::stdin()), //read from stdin if no file provided
+                }
+                .map_err(|e| e.to_string())?;
 
             let url = format!("https://hastebin.com/{}", id);
             println!("{}", url);
