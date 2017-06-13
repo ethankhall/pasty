@@ -70,7 +70,13 @@ fn run(matches: ArgMatches) -> Result<(), String> {
                                                                   .value_of("filename")
                                                                   .map(|s| s.to_owned()))
                             }
-                            None => uploader::github::upload(&mut io::stdin(), "".to_owned()),
+                            None => {
+                                uploader::github::upload(&mut io::stdin(),
+                                                         matches
+                                                             .value_of("filename")
+                                                             .unwrap_or("")
+                                                             .to_owned())
+                            }
                         }
                         .map_err(|e| e.to_string())?;
                     url
