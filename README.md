@@ -19,5 +19,5 @@ If you don't want to build from source, head over to the [releases](https://gith
 3. Enter the directory and run `cargo install`
 4. You're done! Optionally, add the following to your `vim` config file to create a custom command to upload the currently open file.
 ```
-:command Haste !hastebin-client upload --open "%"
+:command Haste :w !hastebin-client upload --open 
 ```
