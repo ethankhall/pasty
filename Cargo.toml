@@ -2,6 +2,9 @@
 name = "pasty"
 version = "0.2.0"
 authors = ["Joe K"]
+repository="https://github.com/joek13/pasty"
+description="A CLI tool for uploading to hastebin-like sites."
+license="MIT"
 
 [dependencies]
 "hyper"="0.10.12"
