@@ -1,6 +1,8 @@
 # hastebin-client
-A CLI client for hastebin.com written in Rust.
+A CLI client for hastebin.com and other similar services written in Rust.
 Currently, it only supports uploading of files. You can optionally open newly opened files in a new browser window using `--open`.
+## Supported services
+Currently, hastebin and GitHub gist are supported. By default, Hastebin is used, but you can specify the service using the `--service` option.
 
 ## Example Usage
 ```Bash
