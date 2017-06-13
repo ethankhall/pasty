@@ -6,7 +6,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-mod hastebin;
+mod uploader;
 
 use clap::{App, Arg, SubCommand, ArgMatches};
 use std::io::Write;
@@ -47,8 +47,8 @@ fn run(matches: ArgMatches) -> Result<(), String> {
 
             //upload file
             let id = match matches.value_of("file") {
-                    Some(file) => hastebin::upload_file(file), //read from file
-                    None => hastebin::upload(&mut io::stdin()), //read from stdin if no file provided
+                    Some(file) => uploader::upload_file(file), //read from file
+                    None => uploader::upload(&mut io::stdin()), //read from stdin if no file provided
                 }
                 .map_err(|e| e.to_string())?;
 
