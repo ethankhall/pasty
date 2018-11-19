@@ -4,6 +4,7 @@ use std::fs::File;
 use std::path::Path;
 use std::error::Error;
 use std::fmt;
+use std::env;
 
 use hyper;
 use hyper::client::Client;
@@ -11,6 +12,7 @@ use hyper::header;
 use hyper::net::HttpsConnector;
 use hyper::status::StatusCode;
 use hyper_native_tls::NativeTlsClient;
+use hyper::client::IntoUrl;
 
 use serde_json;
 use serde_json::Value;
@@ -22,6 +24,7 @@ pub enum UploadError {
     HyperError(hyper::error::Error),
     ApiError(StatusCode),
     ParseError(serde_json::error::Error),
+    UrlParseError(String),
 }
 
 impl From<io::Error> for UploadError {
@@ -50,6 +53,7 @@ impl fmt::Display for UploadError {
             UploadError::ParseError(ref e) => e.to_string(),
             UploadError::ApiError(code) => format!("Server responded with status code {}", code),
             UploadError::TlsError(ref e) => e.clone(),
+            UploadError::UrlParseError(ref e) => e.clone(),
         };
         write!(f, "{}", message)
     }
@@ -64,7 +68,8 @@ impl Error for UploadError {
             UploadError::TlsError(ref e) => e.as_str(),
             UploadError::ApiError(_) => {
                 "The server responded with a status code that was not successful."
-            }
+            },
+            UploadError::UrlParseError(ref e) => e.as_str(),
         }
     }
 }
@@ -91,8 +96,20 @@ pub mod hastebin {
         let connector = HttpsConnector::new(ssl);
         let client = Client::with_connector(connector);
 
+        let hastbin_base_url = match env::var("HASTBIN_DOMAIN") {
+            Ok(value) => format!("https://{}", value).to_owned(),
+            Err(_) => "https://hastebin.com".to_owned()
+        };
+
+        let document_url_str = format!("{}/documents", hastbin_base_url);
+
+        let document_url = match document_url_str.into_url() {
+            Ok(url) => url,
+            Err(err) => return Err(UploadError::UrlParseError(err.to_string()))
+        };
+
         let mut res = client
-            .post("https://hastebin.com/documents")
+            .post(document_url)
             .body(contents.as_str())
             .header(header::UserAgent(USER_AGENT.to_owned()))
             .send()?;
@@ -101,7 +118,7 @@ pub mod hastebin {
             let mut response_body = String::new();
             res.read_to_string(&mut response_body)?;
             let r: Response = serde_json::from_str(response_body.as_str())?;
-            Ok(format!("https://hastebin.com/{}", r.key))
+            Ok(format!("{}/{}", hastbin_base_url, r.key))
         } else {
             return Err(UploadError::ApiError(res.status));
         }
