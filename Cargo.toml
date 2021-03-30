@@ -7,7 +7,7 @@ description="A CLI tool for uploading to hastebin-like sites."
 license="MIT"
 
 [dependencies]
-"hyper"="0.10.12"
+"hyper"="0.14.5"
 "hyper-native-tls"="0.2.4"
 "clap"="2.24.2"
 "serde"="1.0.8"
